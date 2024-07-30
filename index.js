@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { request, gql } from "graphql-request";
+import { formatUnits } from "@ethersproject/units";
 
 const terminal3_1_1_contract = "0x457cD63bee88ac01f3cD4a67D5DCc921D8C0D573"
 const terminal3_1_1_start = new Date("Jul-25-2023 10:47:47 PM UTC").getTime() / 1000
@@ -56,8 +57,7 @@ async function main() {
       // get the payEvent for this txnHash
       const payEvent = projectIdToPayout[projectId].find((payEvent) => payEvent.txHash === txnHash);
       if (!payEvent) {
-        console.log("PayEvent not found for", txnHash);
-        return;
+        throw new Error(`PayEvent not found for txHash: ${txnHash}`);
       }
       const distributedAmount = BigInt(distributionEvents.amount);
       const receivedAmount = BigInt(payEvent.amount);
@@ -65,12 +65,17 @@ async function main() {
       projectIdToDiscrepancy[projectId].push(discrepancy);
     });
   });
+  console.log(projectIdToDiscrepancy);
   // sum the discrepancies
   let projectIdToTotalDiscrepancy = {};
   Object.entries(projectIdToDiscrepancy).forEach(([projectId, discrepancies]) => {
-    projectIdToTotalDiscrepancy[projectId] = convertBigIntToDecimal(discrepancies.reduce((acc, discrepancy) => acc + discrepancy, 0n));
+    projectIdToTotalDiscrepancy[projectId] = discrepancies.reduce((acc, discrepancy) => acc + discrepancy, 0n);
+    console.log(`ProjectId: ${projectId}, Total discrepancy: ${formatUnits(String(projectIdToTotalDiscrepancy[projectId]), "ether")} ETH`);
   });
-  console.log(projectIdToTotalDiscrepancy);
+  // console.log(projectIdToTotalDiscrepancy);
+  // print sum of discrepancies
+  let totalDiscrepancy = String(Object.values(projectIdToTotalDiscrepancy).reduce((acc, discrepancy) => acc + discrepancy, 0n));
+  console.log(`Total discrepancy: ${formatUnits(totalDiscrepancy, "ether")} ETH`);
 }
 
 async function getTerminalPayEvents(terminal_not, timestamp_gt, timestamp_lt = undefined) {
@@ -92,7 +97,7 @@ async function getTerminalPayEvents(terminal_not, timestamp_gt, timestamp_lt = u
       txHash
     }
   }`;
-
+  // console.log(query);
   const data = await request(API_URL, query);
   const { payEvents } = data;
   return payEvents;
@@ -106,7 +111,7 @@ async function getDistributionEvents(txHashArray, projectIdArray) {
         txHash_in: [${txHashArray.map((txHash) => `"${txHash}"`).join(",")}]
       }
       orderBy: fundingCycleNumber
-      orderDirection: desc  # or desc, depending on your needs
+      orderDirection: desc
     ) {
       fundingCycleNumber
       distributedAmount
@@ -122,18 +127,11 @@ async function getDistributionEvents(txHashArray, projectIdArray) {
       }
     }
   }`;
-
+  // console.log(query);
   const data = await request(API_URL, query);
   const { distributePayoutsEvents } = data;
   return distributePayoutsEvents;
 }
 
-function convertBigIntToDecimal(value, decimalPlaces = 18) {
-  const divisor = 10n ** BigInt(decimalPlaces);
-  const quotient = value / divisor;
-  const remainder = value % divisor;
-  const result = Number(quotient) + Number(remainder) / Number(divisor);
-  return result;
-}
 
 main();
