@@ -97,20 +97,33 @@ async function main() {
   let totalAfterFee = 0n;
 
   Object.entries(projectIdToTotalDiscrepancy).forEach(([projectId, discrepancy]) => {
-    const findersFee = projectIdToFindersFee[projectId];
-    const afterFee = discrepancy - findersFee;
+    const findersFee = (projectId !== "387") ? projectIdToFindersFee[projectId] : 0n;
+    const afterFee = (projectId !== "387") ? discrepancy - findersFee : 0n;
 
     // Use the lookup table to get project name and link
     const project = projectLookup[projectId] || {name: "Unknown", link: "#"};
     const projectNameAndLink = `[${project.name}](${project.link})`;
 
+    let discrepancyString = formatEther(discrepancy);
+    let findersFeeString = formatEther(findersFee);
+    let afterFeeString = formatEther(afterFee);
+    if (projectId === "387") {
+      discrepancyString = `*${discrepancyString}*`;
+      findersFeeString = "N/A fees owed";
+      afterFeeString = "N/A fees owed";
+    }
+
     console.log(
-      `| ${projectId.toString().padStart(9)} | ${projectNameAndLink.padEnd(61)} | ${formatEther(discrepancy).padStart(25)} | ${formatEther(findersFee).padStart(17).padEnd(20)} | ${formatEther(afterFee).padStart(19).padEnd(21)} |`
+      `| ${projectId.toString().padStart(9)} | ${projectNameAndLink.padEnd(61)} | ${discrepancyString.padStart(25)} | ${findersFeeString.padStart(17).padEnd(20)} | ${afterFeeString.padStart(19).padEnd(21)} |`
     );
 
-    totalExcessFees += discrepancy;
-    totalFindersFee += findersFee;
-    totalAfterFee += afterFee;
+    // dont include wagmi-studios in the total since they still owe @juicebox from previous bookkeeping error
+    // https://docs.juicebox.money/dev/resources/post-mortem/2023-02-22/#wagmi
+    if (projectId !== "387") {
+      totalExcessFees += discrepancy;
+      totalFindersFee += findersFee;
+      totalAfterFee += afterFee;
+    }
   });
 
   // Print total row

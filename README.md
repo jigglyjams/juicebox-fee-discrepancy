@@ -105,9 +105,11 @@
   
 ## Results
 
+Correction payouts with 15% finders fee
+
 | ProjectId |                     Project Name & Link                       | Excess Fees Charged (ETH) | Finders fee (ETH)    |   After fee (ETH)     |
 | :-------: | :----------------------------------------------------------:  | :-----------------------: | :---------------:    | :-----------------:   |
-|       387 | [@wagmi-studios](https://juicebox.money/@wagmi-studios)       |      1.055030557777181604 | 0.15825458366657724  | 0.896775974110604364  |
+|       387 | [@wagmi-studios](https://juicebox.money/@wagmi-studios)       |    *1.055030557777181604* |     N/A fees owed    |       N/A fees owed   |
 |       397 | [@peel](https://juicebox.money/@peel)                         |      8.892181052298771322 | 1.333827157844815698 | 7.558353894453955624  |
 |       421 | [@exhausted-pigeon](https://juicebox.money/@exhausted-pigeon) |      2.059416717385266471 | 0.30891250760778997  | 1.750504209777476501  |
 |       470 | [@breadfruit](https://juicebox.money/@breadfruit)             |      1.605713071553927699 | 0.240856960733089154 | 1.364856110820838545  |
@@ -115,10 +117,16 @@
 |       488 | [Bananapus](https://juicebox.money/v2/p/488)                  |      1.761242616497408637 | 0.264186392474611295 | 1.497056224022797342  |
 |       549 | [Sablier V2 Interop Dev](https://juicebox.money/v2/p/549)     |      0.059078174758318802 | 0.00886172621374782  | 0.050216448544570982  |
 |       552 | [@juicecast](https://juicebox.money/@juicecast)               |      1.306116252162166165 | 0.195917437824324924 | 1.110198814337841241  |
-|           |                               **TOTAL**                       |     18.709707873948924619 | 2.806456181092338688 | 15.903251692856585931 |
+|           |                               **TOTAL**                       |     17.654677316171743015 | 2.648201597425761448 | 15.006475718745981567 |
 
 ## Resolution
+* The Juicebox DAO will send the corrected amount to the projects listed above
+* Send payments to the projects listed above with the corrected amount
+  * @wagmi-studios still owes @juicebox ~1.09 ETH due to a [previous error in bookkeeping](https://docs.juicebox.money/dev/resources/post-mortem/2023-02-22/#wagmi) from February 22, 2023
+  * Do not the @wagmi-studios payout and finders fee
+* Send 15% finders fee to [@jigglyjams](https://juicebox.money/@jigglyjams)
 * In order to prevent this fee discrepancy, `jbdao.eth` should set all versions of payment terminals as feeless
+  * [JBP-506](https://nance.app/s/juicebox/506)
 * In the future, if a new terminal is deployed, all terminals must be updated
 * Open question: How do we remind ourselves to do this in the future? Can we automate this process?
 
