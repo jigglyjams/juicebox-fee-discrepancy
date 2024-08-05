@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { request, gql } from "graphql-request";
-import { formatUnits } from "@ethersproject/units";
+import { formatEther } from "@ethersproject/units";
 
 const terminal3_1_1_contract = "0x457cD63bee88ac01f3cD4a67D5DCc921D8C0D573"
 const terminal3_1_1_start = new Date("Jul-25-2023 10:47:47 PM UTC").getTime() / 1000
@@ -11,9 +11,22 @@ const terminal3_1_2_start = new Date("Aug-23-2023 12:23:23 AM UTC").getTime() / 
 const API_KEY = process.env.SUBGRAPH_API_KEY;
 const API_URL = `https://subgraph.satsuma-prod.com/${API_KEY}/juicebox/mainnet/api`
 
+const projectLookup = {
+  "387": {name: "@wagmi-studios", link: "https://juicebox.money/@wagmi-studios"},
+  "397": {name: "@peel", link: "https://juicebox.money/@peel"},
+  "421": {name: "@exhausted-pigeon", link: "https://juicebox.money/@exhausted-pigeon"},
+  "470": {name: "@breadfruit", link: "https://juicebox.money/@breadfruit"},
+  "477": {name: "@nance-app", link: "https://juicebox.money/@nance-app"},
+  "488": {name: "Bananapus", link: "https://juicebox.money/v2/p/488"},
+  "549": {name: "Sablier V2 Interop Dev", link: "https://juicebox.money/v2/p/549"},
+  "552": {name: "@juicecast", link: "https://juicebox.money/@juicecast"}
+};
+
 let projectIdToPayout = {};
 let projectIdToDistribution = {};
 let txHashSet = new Set();
+
+const FINDERS_FEE_PERCENTAGE = 15n;
 
 async function main() {
   const payEventsT311 = await getTerminalPayEvents(terminal3_1_1_contract, terminal3_1_1_start, terminal3_1_2_start);
@@ -65,17 +78,45 @@ async function main() {
       projectIdToDiscrepancy[projectId].push(discrepancy);
     });
   });
-  console.log(projectIdToDiscrepancy);
+
   // sum the discrepancies
   let projectIdToTotalDiscrepancy = {};
+  let projectIdToFindersFee = {};
   Object.entries(projectIdToDiscrepancy).forEach(([projectId, discrepancies]) => {
     projectIdToTotalDiscrepancy[projectId] = discrepancies.reduce((acc, discrepancy) => acc + discrepancy, 0n);
-    console.log(`ProjectId: ${projectId}, Total discrepancy: ${formatUnits(String(projectIdToTotalDiscrepancy[projectId]), "ether")} ETH`);
+    const findersFee = (projectIdToTotalDiscrepancy[projectId] * FINDERS_FEE_PERCENTAGE) / 100n;
+    projectIdToFindersFee[projectId] = findersFee;
   });
-  // console.log(projectIdToTotalDiscrepancy);
-  // print sum of discrepancies
-  let totalDiscrepancy = String(Object.values(projectIdToTotalDiscrepancy).reduce((acc, discrepancy) => acc + discrepancy, 0n));
-  console.log(`Total discrepancy: ${formatUnits(totalDiscrepancy, "ether")} ETH`);
+
+  // print discrepancies
+  console.log("| ProjectId |                     Project Name & Link                       | Excess Fees Charged (ETH) | Finders fee (ETH)    |   After fee (ETH)     |");
+  console.log("| :-------: | :----------------------------------------------------------:  | :-----------------------: | :---------------:    | :-----------------:   |");
+
+  let totalExcessFees = 0n;
+  let totalFindersFee = 0n;
+  let totalAfterFee = 0n;
+
+  Object.entries(projectIdToTotalDiscrepancy).forEach(([projectId, discrepancy]) => {
+    const findersFee = projectIdToFindersFee[projectId];
+    const afterFee = discrepancy - findersFee;
+
+    // Use the lookup table to get project name and link
+    const project = projectLookup[projectId] || {name: "Unknown", link: "#"};
+    const projectNameAndLink = `[${project.name}](${project.link})`;
+
+    console.log(
+      `| ${projectId.toString().padStart(9)} | ${projectNameAndLink.padEnd(61)} | ${formatEther(discrepancy).padStart(25)} | ${formatEther(findersFee).padStart(17).padEnd(20)} | ${formatEther(afterFee).padStart(19).padEnd(21)} |`
+    );
+
+    totalExcessFees += discrepancy;
+    totalFindersFee += findersFee;
+    totalAfterFee += afterFee;
+  });
+
+  // Print total row
+  console.log(
+    `| ${" ".repeat(9)} | ${" ".repeat(30)}**TOTAL**${" ".repeat(22)} | ${formatEther(totalExcessFees).padStart(25)} | ${formatEther(totalFindersFee).padStart(17)} | ${formatEther(totalAfterFee).padStart(19)} |`
+  );
 }
 
 async function getTerminalPayEvents(terminal_not, timestamp_gt, timestamp_lt = undefined) {

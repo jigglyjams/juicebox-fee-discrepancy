@@ -1,5 +1,5 @@
 # Juicebox Fee Discrepancy
-* Juicebox JBX membership fees according to [docs.juicebox.money](https://docs.juicebox.money/dev/learn/overview/#jbx-membership-fee):
+* The intended behavior of Juicebox JBX membership fees according to [docs.juicebox.money](https://docs.juicebox.money/dev/learn/overview/#jbx-membership-fee):
     > All funds distributed by projects from their treasuries to destinations outside of the Juicebox ecosystem (i.e. distributions that do not go to other Juicebox treasuries) will incure a protocol fee
 
     > Any funds sent from one juicebox treasury to another via splits do not incur fees.
@@ -105,19 +105,23 @@
   
 ## Results
 
-| ProjectId |                     Project Name & Link                      | Excess Fees Charged (ETH) |
-| :-------: | :----------------------------------------------------------: | :-----------------------: |
-|    387    |   [@wagmi-studios](https://juicebox.money/@wagmi-studios)    |   1.055030557777181604    |
-|    397    |            [@peel](https://juicebox.money/@peel)             |   8.892181052298771322    |
-|    421    | [@exhausted-pigeon](https://juicebox.money/@exhausted-pigeon)|   2.059416717385266471    |
-|    470    |      [@breadfruit](https://juicebox.money/@breadfruit)       |   1.605713071553927699    |
-|    477    |       [@nance-app](https://juicebox.money/@nance-app)        |   1.970929431515883919    |
-|    488    |         [Bananapus](https://juicebox.money/v2/p/488)         |   1.761242616497408637    |
-|    549    |  [Sablier V2 Interop Dev](https://juicebox.money/v2/p/549)   |   0.059078174758318802    |
-|    552    |       [@juicecast](https://juicebox.money/@juicecast)        |   1.306116252162166165    |
-|           |                          **TOTAL**                           | **18.709707873948924619** |
+| ProjectId |                     Project Name & Link                       | Excess Fees Charged (ETH) | Finders fee (ETH)    |   After fee (ETH)     |
+| :-------: | :----------------------------------------------------------:  | :-----------------------: | :---------------:    | :-----------------:   |
+|       387 | [@wagmi-studios](https://juicebox.money/@wagmi-studios)       |      1.055030557777181604 | 0.15825458366657724  | 0.896775974110604364  |
+|       397 | [@peel](https://juicebox.money/@peel)                         |      8.892181052298771322 | 1.333827157844815698 | 7.558353894453955624  |
+|       421 | [@exhausted-pigeon](https://juicebox.money/@exhausted-pigeon) |      2.059416717385266471 | 0.30891250760778997  | 1.750504209777476501  |
+|       470 | [@breadfruit](https://juicebox.money/@breadfruit)             |      1.605713071553927699 | 0.240856960733089154 | 1.364856110820838545  |
+|       477 | [@nance-app](https://juicebox.money/@nance-app)               |      1.970929431515883919 | 0.295639414727382587 | 1.675290016788501332  |
+|       488 | [Bananapus](https://juicebox.money/v2/p/488)                  |      1.761242616497408637 | 0.264186392474611295 | 1.497056224022797342  |
+|       549 | [Sablier V2 Interop Dev](https://juicebox.money/v2/p/549)     |      0.059078174758318802 | 0.00886172621374782  | 0.050216448544570982  |
+|       552 | [@juicecast](https://juicebox.money/@juicecast)               |      1.306116252162166165 | 0.195917437824324924 | 1.110198814337841241  |
+|           |                               **TOTAL**                       |     18.709707873948924619 | 2.806456181092338688 | 15.903251692856585931 |
 
-  
+## Resolution
+* In order to prevent this fee discrepancy, `jbdao.eth` should set all versions of payment terminals as feeless
+* In the future, if a new terminal is deployed, all terminals must be updated
+* Open question: How do we remind ourselves to do this in the future? Can we automate this process?
+
 ### Contract addresses
 `JBETHPaymentTerminal`: [0x594Cb208b5BB48db1bcbC9354d1694998864ec63](https://etherscan.io/address/0x594Cb208b5BB48db1bcbC9354d1694998864ec63)
 
